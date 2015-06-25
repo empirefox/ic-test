@@ -10,6 +10,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Stream #0:0: Video: mjpeg, yuvj422p(pc, bt470bg/unknown/unknown), 640x480 [SAR 1:1 DAR 4:3], 10 tbr, 90k tbn, 90k tbc
+// Stream #0:1: Audio: pcm_mulaw, 8000 Hz, 1 channels, s16, 64 kb/s
+var streamUrl1 = "rtsp://savage:qingqing@192.168.1.8:83/h.246.sdp"
+var streamUrl2 = "rtsp://127.0.0.1:1235/test1.sdp"
+var streamUrl = streamUrl1
+
 func init() {
 	flag.Set("stderrthreshold", "INFO")
 }
@@ -81,7 +87,7 @@ func startWs() {
 	send := make(chan []byte, 64)
 
 	// offer comes
-	pc := conductor.CreatePeer("rtsp://127.0.0.1:1235/test1.sdp", send)
+	pc := conductor.CreatePeer(streamUrl, send)
 	pc.CreateAnswer(offer.Sdp)
 	glog.Infoln("CreateAnswer ok")
 	go readMsgs(ws, pc)
@@ -109,7 +115,8 @@ func addICE() {
 func main() {
 	flag.Parse()
 	conductor = rtc.NewConductor()
+	defer conductor.Release()
 	addICE()
-	conductor.Registry("rtsp://127.0.0.1:1235/test1.sdp")
+	conductor.Registry(streamUrl, "/home/savage/111", true)
 	startWs()
 }
