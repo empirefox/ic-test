@@ -1,3 +1,4 @@
+// rtc-server -stderrthreshold=INFO
 package main
 
 import (
