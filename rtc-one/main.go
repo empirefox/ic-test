@@ -1,20 +1,16 @@
 package main
 
 import (
+	"bufio"
 	"crypto/tls"
 	"encoding/json"
 	"flag"
+	"os"
 
 	"github.com/empirefox/ic-client-one-wrap"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )
-
-// Stream #0:0: Video: mjpeg, yuvj422p(pc, bt470bg/unknown/unknown), 640x480 [SAR 1:1 DAR 4:3], 10 tbr, 90k tbn, 90k tbc
-// Stream #0:1: Audio: pcm_mulaw, 8000 Hz, 1 channels, s16, 64 kb/s
-var streamUrl1 = "rtsp://savage:qingqing@192.168.1.8:83/h.246.sdp"
-var streamUrl2 = "rtsp://127.0.0.1:1235/test1.sdp"
-var streamUrl = streamUrl1
 
 func init() {
 	flag.Set("stderrthreshold", "INFO")
@@ -30,6 +26,30 @@ var dailer = websocket.Dialer{
 }
 
 var conductor rtc.Conductor
+
+// Stream #0:0: Video: mjpeg, yuvj422p(pc, bt470bg/unknown/unknown), 640x480 [SAR 1:1 DAR 4:3], 10 tbr, 90k tbn, 90k tbc
+// Stream #0:1: Audio: pcm_mulaw, 8000 Hz, 1 channels, s16, 64 kb/s
+var streamUrl1 = "rtsp://savage:qingqing@192.168.1.8:83/h.246.sdp"
+var streamUrl2 = "rtsp://127.0.0.1:1235/test1.sdp"
+var streamUrl3 = "rtsp://218.204.223.237:554/live/1/0547424F573B085C/gsfp90ef4k0a6iap.sdp"
+var streamUrl = streamUrl1
+
+func main() {
+	flag.Parse()
+	conductor = rtc.NewConductor()
+	addICE()
+	conductor.Registry(streamUrl, "/home/savage/111", false)
+
+	send := make(chan []byte, 64)
+	quit := make(chan bool, 1)
+	readLineToQuit(quit)
+	startWs(send, quit)
+	glog.Infoln("peer deleted!")
+	readLineToQuit(quit)
+	<-quit
+	conductor.Release()
+	glog.Infoln("Quit!")
+}
 
 type PeerMsg struct {
 	Candidate string `json:"candidate,omitempty"`
@@ -64,8 +84,8 @@ func readMsgs(ws *websocket.Conn, pc rtc.PeerConn) {
 	}
 }
 
-func startWs() {
-	ws, _, err := dailer.Dial("ws://192.168.1.222:9999/one", nil)
+func startWs(send chan []byte, quit chan bool) {
+	ws, _, err := dailer.Dial("ws://127.0.0.1:9999/one", nil)
 	if err != nil {
 		glog.Errorln(err)
 		return
@@ -84,10 +104,9 @@ func startWs() {
 		return
 	}
 
-	send := make(chan []byte, 64)
-
 	// offer comes
 	pc := conductor.CreatePeer(streamUrl, send)
+	defer conductor.DeletePeer(pc)
 	pc.CreateAnswer(offer.Sdp)
 	glog.Infoln("CreateAnswer ok")
 	go readMsgs(ws, pc)
@@ -101,6 +120,8 @@ func startWs() {
 			if err := ws.WriteMessage(websocket.TextMessage, msg); err != nil {
 				return
 			}
+		case <-quit:
+			return
 		}
 	}
 }
@@ -112,11 +133,10 @@ func addICE() {
 	conductor.AddIceServer("turn:turn.anyfirewall.com:443?transport=tcp", "webrtc", "webrtc")
 }
 
-func main() {
-	flag.Parse()
-	conductor = rtc.NewConductor()
-	defer conductor.Release()
-	addICE()
-	conductor.Registry(streamUrl, "/home/savage/111", true)
-	startWs()
+func readLineToQuit(quit chan bool) {
+	reader := bufio.NewReader(os.Stdin)
+	go func() {
+		reader.ReadLine()
+		quit <- true
+	}()
 }
