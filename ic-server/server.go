@@ -22,6 +22,7 @@ func main() {
 	go h.Run()
 
 	conf, oauthBs := NewGoauthConf()
+	conf.PathSuccess = "/rooms.html"
 	conf.NewUserFunc = func() goauth.OauthUser {
 		return &Oauth{}
 	}

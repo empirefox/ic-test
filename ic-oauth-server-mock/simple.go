@@ -68,7 +68,7 @@ func main() {
 		if ir := server.HandleInfoRequest(resp, r); ir != nil {
 			server.FinishInfoRequest(resp, r, ir)
 		}
-		resp.Output["oid"] = "asdfg"
+		resp.Output["oid"] = "mocked_oid"
 		osin.OutputJSON(resp, w, r)
 	})
 
