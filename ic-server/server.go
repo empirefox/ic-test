@@ -16,6 +16,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	//	as := NewAccountService()
+	//	as.DropTables()
 	//	as.CreateTables()
 
 	h := connections.NewHub()
