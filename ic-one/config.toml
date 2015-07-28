@@ -1,5 +1,0 @@
-RecDir = "/home/savage/ipcam-records"
-SecretAddress = "ba6e6c12-855f-559f-abcb-ea2c7d75420e"
-Secure = false
-Server = "127.0.0.1:9999"
-PingPeriod = 45000000000

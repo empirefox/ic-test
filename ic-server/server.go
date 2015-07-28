@@ -2,8 +2,6 @@
 package main
 
 import (
-	"runtime"
-
 	"github.com/empirefox/gin-oauth2"
 	"github.com/empirefox/gotool/paas"
 	. "github.com/empirefox/ic-server-ws-signal/account"
@@ -13,7 +11,7 @@ import (
 
 // Must set PORT and DB_URL to test mode
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	//	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	//	as := NewAccountService()
 	//	as.DropTables()

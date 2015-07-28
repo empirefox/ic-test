@@ -4,6 +4,7 @@ package main
 // http://localhost:14000/app
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,7 +13,33 @@ import (
 	"github.com/RangelReale/osin/example"
 )
 
+func init() {
+	flag.Set("stderrthreshold", "INFO")
+}
+
+type User struct {
+	Password string
+	Oid      string
+}
+
+var users = map[string]User{
+	"test":  User{Password: "test", Oid: "mocked_oid"},
+	"test2": User{Password: "test2", Oid: "test_mocked_oid"},
+}
+
+func Login(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.Request) (*User, bool) {
+	r.ParseForm()
+	if r.Method == "POST" {
+		if user, ok := users[r.Form.Get("login")]; ok && r.Form.Get("password") == user.Password {
+			return &user, true
+		}
+	}
+	example.HandleLoginPage(ar, w, r)
+	return nil, false
+}
+
 func main() {
+	flag.Parse()
 	cfg := osin.NewServerConfig()
 	cfg.AllowGetAccessRequest = true
 	cfg.AllowClientSecretInParams = true
@@ -33,10 +60,12 @@ func main() {
 		defer resp.Close()
 
 		if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
-			if !example.HandleLoginPage(ar, w, r) {
+			user, ok := Login(ar, w, r)
+			if !ok {
 				return
 			}
 			ar.Authorized = true
+			ar.UserData = user
 			server.FinishAuthorizeRequest(resp, r, ar)
 		}
 		if resp.IsError && resp.InternalError != nil {
@@ -67,8 +96,8 @@ func main() {
 
 		if ir := server.HandleInfoRequest(resp, r); ir != nil {
 			server.FinishInfoRequest(resp, r, ir)
+			resp.Output["oid"] = ir.AccessData.UserData.(*User).Oid
 		}
-		resp.Output["oid"] = "mocked_oid"
 		osin.OutputJSON(resp, w, r)
 	})
 
