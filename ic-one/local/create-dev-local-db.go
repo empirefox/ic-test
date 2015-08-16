@@ -23,7 +23,7 @@ func main() {
 	defer c.Close()
 
 	c.Put(storage.K_SECURE, []byte("F"))
-	c.Put(storage.K_SERVER, []byte("127.0.0.1:9999"))
+	c.Put(storage.K_SERVER, []byte("127.0.0.1:9998"))
 	c.Put(storage.K_REC_DIR, []byte("ipcam-records-dev"))
 
 	c.PutIpcam(&ipcam.Ipcam{

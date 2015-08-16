@@ -49,7 +49,7 @@ func main() {
 	storage.SetClient("1234", &osin.DefaultClient{
 		Id:          "1234",
 		Secret:      "aabbccdd",
-		RedirectUri: "http://127.0.0.1:9999/o/mock",
+		RedirectUri: "http://127.0.0.1:9999/o/p/mock",
 	})
 
 	server := osin.NewServer(cfg, storage)

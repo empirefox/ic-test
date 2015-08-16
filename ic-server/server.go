@@ -2,29 +2,25 @@
 package main
 
 import (
-	"github.com/empirefox/gin-oauth2"
+	"flag"
+
 	"github.com/empirefox/gotool/paas"
 	. "github.com/empirefox/ic-server-ws-signal/account"
-	"github.com/empirefox/ic-server-ws-signal/connections"
+	"github.com/empirefox/ic-server-ws-signal/conn/hub"
 	"github.com/empirefox/ic-server-ws-signal/server"
 )
 
 // Must set PORT and DB_URL to test mode
 func main() {
+	flag.Parse()
 	//	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	//	as := NewAccountService()
 	//	as.DropTables()
 	//	as.CreateTables()
 
-	h := connections.NewHub()
+	h := hub.NewHub()
 	go h.Run()
-
-	conf, oauthBs := NewGoauthConf()
-	conf.PathSuccess = "/rooms.html"
-	conf.NewUserFunc = func() goauth.OauthUser {
-		return &Oauth{}
-	}
 
 	s := server.Server{
 		Hub:         h,
