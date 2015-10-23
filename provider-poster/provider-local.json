@@ -1,13 +1,5 @@
 {
-  "Name": "Mock",
-  "Path": "/o/p/mock",
+  "Name": "mock",
   "ClientID": "1234",
-  "ClientSecret": "aabbccdd",
-  "AuthURL": "http://127.0.0.1:14000/authorize",
-  "TokenURL": "http://127.0.0.1:14000/token",
-  "RedirectURL": "http://127.0.0.1:9999/o/p/mock",
-  "Scopes": "",
-  "UserEndpoint": "http://127.0.0.1:14000/info",
-  "OidJsonPath": "oid",
-  "Css": "fa fa-sign-in"
+  "ClientSecret": "aabbccdd"
 }

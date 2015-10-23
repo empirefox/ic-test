@@ -11,6 +11,7 @@ import (
 
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
+	"github.com/golang/glog"
 )
 
 func init() {
@@ -49,7 +50,7 @@ func main() {
 	storage.SetClient("1234", &osin.DefaultClient{
 		Id:          "1234",
 		Secret:      "aabbccdd",
-		RedirectUri: "http://127.0.0.1:9999/o/p/mock",
+		RedirectUri: "http://127.0.0.1:9999",
 	})
 
 	server := osin.NewServer(cfg, storage)
@@ -58,6 +59,9 @@ func main() {
 	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
 		resp := server.NewResponse()
 		defer resp.Close()
+
+		glog.Infoln("Referer:", r.Referer())
+		glog.Infoln("Origin:", r.Header["Origin"])
 
 		if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
 			user, ok := Login(ar, w, r)
@@ -97,6 +101,8 @@ func main() {
 		if ir := server.HandleInfoRequest(resp, r); ir != nil {
 			server.FinishInfoRequest(resp, r, ir)
 			resp.Output["oid"] = ir.AccessData.UserData.(*User).Oid
+			resp.Output["name"] = "mockeduser"
+			resp.Output["pic"] = "https://cdn.jsdelivr.net/emojione/assets/png/1F600.png?v=1.2.4"
 		}
 		osin.OutputJSON(resp, w, r)
 	})

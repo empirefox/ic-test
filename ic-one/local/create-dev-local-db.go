@@ -26,11 +26,21 @@ func main() {
 	c.Put(storage.K_SERVER, []byte("127.0.0.1:9998"))
 	c.Put(storage.K_REC_DIR, []byte("ipcam-records-dev"))
 
+	//	c.PutIpcam(&ipcam.Ipcam{
+	//		Id:       "Mock_" + uniuri.New(),
+	//		Url:      "rtsp://savage:qingqing@192.168.1.8:83/h.246.sdp",
+	//		Rec:      true,
+	//		AudioOff: false,
+	//		Off:      false,
+	//		Online:   true,
+	//	})
+
 	c.PutIpcam(&ipcam.Ipcam{
-		Id:     "Mock_" + uniuri.New(),
-		Url:    "rtsp://savage:qingqing@192.168.1.8:83/h.246.sdp",
-		Rec:    false,
-		Off:    false,
-		Online: true,
+		Id:       "Mock_" + uniuri.New(),
+		Url:      "rtsp://192.168.1.11:10554/udp/av0_0?tcp",
+		Rec:      true,
+		AudioOff: true,
+		Off:      false,
+		Online:   true,
 	})
 }
