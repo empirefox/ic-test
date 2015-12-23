@@ -66,12 +66,5 @@ func main() {
 		glog.Errorln(err)
 		return
 	}
-	glog.Infoln(response.StatusCode)
-	defer response.Body.Close()
-	contents, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		glog.Errorln(err)
-		return
-	}
-	glog.Infoln(string(contents))
+	response.Write(os.Stdout)
 }

@@ -36,9 +36,12 @@ var streamUrl = streamUrl1
 
 func main() {
 	flag.Parse()
-	conductor = rtc.NewConductor()
+	conductor = rtc.NewConductor(new(NullStatusObserver))
 	addICE()
-	conductor.Registry(streamUrl, "/home/savage/111", false)
+	_, ok := conductor.Registry("testcam", streamUrl, "/home/savage/111", false, true)
+	if !ok {
+		panic("cannot registry camera")
+	}
 
 	send := make(chan []byte, 64)
 	quit := make(chan bool, 1)
@@ -51,16 +54,24 @@ func main() {
 	glog.Infoln("Quit!")
 }
 
-type PeerMsg struct {
-	Candidate string `json:"candidate,omitempty"`
-	Mid       string `json:"sdpMid,omitempty"`
-	Line      int    `json:"sdpMLineIndex,omitempty"`
+type NullStatusObserver struct{}
 
-	Type string `json:"type,omitempty"`
-	Sdp  string `json:"sdp,omitempty"`
+func (NullStatusObserver) OnGangStatus(id string, status uint) {
+	glog.Errorf("cam[%s] status now: %d\n", id, status)
 }
 
-func readMsgs(ws *websocket.Conn, pc rtc.PeerConn) {
+type PeerMsg struct {
+	Camera string `json:"camera,omitempty"`
+	Type   string `json:"type,omitempty"`
+
+	Candidate string `json:"candidate,omitempty"`
+	Id        string `json:"id,omitempty"`
+	Label     int    `json:"label,omitempty"`
+
+	Sdp string `json:"sdp,omitempty"`
+}
+
+func readMsgs(ws *websocket.Conn, pc rtc.PeerConn, quit chan bool) {
 	for {
 		_, b, err := ws.ReadMessage()
 		if err != nil {
@@ -76,7 +87,9 @@ func readMsgs(ws *websocket.Conn, pc rtc.PeerConn) {
 			case "candidate":
 				// cadidate comes
 				glog.Infoln("add candidate")
-				pc.AddCandidate(msg.Candidate, msg.Mid, msg.Line)
+				pc.AddCandidate(msg.Candidate, msg.Id, msg.Label)
+			case "bye":
+				quit <- true
 			default:
 				glog.Errorln("got unknow json message:", string(b))
 			}
@@ -105,11 +118,11 @@ func startWs(send chan []byte, quit chan bool) {
 	}
 
 	// offer comes
-	pc := conductor.CreatePeer(streamUrl, send)
+	pc := conductor.CreatePeer("testcam", func(msg []byte) { send <- msg })
 	defer conductor.DeletePeer(pc)
 	pc.CreateAnswer(offer.Sdp)
 	glog.Infoln("CreateAnswer ok")
-	go readMsgs(ws, pc)
+	go readMsgs(ws, pc, quit)
 
 	for {
 		select {

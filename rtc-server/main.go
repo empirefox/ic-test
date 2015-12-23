@@ -84,8 +84,8 @@ func main() {
 
 	// html
 	// peer from MANY client
-	router.Use(static.Serve("/", static.LocalFile("./public", false)))
 
+	router.Use(static.Serve("/", static.LocalFile("public", true)))
 	//	router.GET("/auth/login", Login)
 	//	router.GET("/auth/logout", Logout)
 
