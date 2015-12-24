@@ -47,7 +47,7 @@ remoteVideo.onresize = function() {
 var pc1;
 var ws;
 var offerOptions = {
-  offerToReceiveAudio: 1,
+  offerToReceiveAudio: 0,
   offerToReceiveVideo: 1
 };
 
